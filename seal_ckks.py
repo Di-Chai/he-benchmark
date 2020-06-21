@@ -158,25 +158,3 @@ print('Cipher-Times-Cipher-Rescale', c_t_c_rescale_error)
 print('Cipher-Times-Plain-Rescale', c_t_p_rescale_error)
 print('Cipher-Times-Cipher-No-Rescale', c_t_c_no_rescale_error)
 print('Cipher-Times-Plain-No-Rescale', c_t_p_no_rescale_error)
-
-# 8192
-# Encrypt 9.473273968696594 ms
-# Encrypt 9.595090448856354 ms
-# Cipher-Add-Cipher 0.878357583284378 ms
-# Cipher-Add-Plain 0.5987134873867035 ms
-# Cipher-Times-Cipher Rescale True 8.761111438274384 ms
-# Cipher-Times-Plain Rescale True 3.1809574604034423 ms
-# Cipher-Times-Cipher Rescale False 6.478950351476669 ms
-# Cipher-Times-Plain Rescale False 0.7880936920642853 ms
-# Decrypt 2.160055488348007 ms
-# Decrypt 2.0523983418941496 ms
-# Decrypt 1.302309012413025 ms
-# Decrypt 1.4352693557739258 ms
-# Decrypt 2.2591874241828918 ms
-# Decrypt 2.1422818720340726 ms
-# Cipher-Add-Cipher Error 1.320334987279649e-09
-# Cipher-Add-Plain Error 9.396874007781245e-10
-# Cipher-Times-Cipher-Rescale 4.1541108643543285e-06
-# Cipher-Times-Plain-Rescale 2.3543582779546964e-06
-# Cipher-Times-Cipher-No-Rescale 4.153989254943783e-06
-# Cipher-Times-Plain-No-Rescale 2.3541159630546997e-06

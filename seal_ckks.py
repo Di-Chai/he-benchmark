@@ -9,14 +9,6 @@ from seal import *
 
 
 """
-TODO:
-(1) RAM size
-(2) Correlation of time and CPU
-(3) LHE test sequence (ax^n)
-"""
-
-
-"""
 --poly_modulus_degree 4096 --log_scale 26 --coeff_modulus 30,24,24,30
 --poly_modulus_degree 8192 --log_scale 60 --coeff_modulus 60,40,40,60
 --poly_modulus_degree 16384 --log_scale 60 --coeff_modulus 60,40,40,60

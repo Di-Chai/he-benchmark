@@ -8,20 +8,85 @@ import numpy as np
 from seal import *
 
 
-class CKKSPlaintext:
-    pass
+class CKKSCiphertext(Ciphertext):
 
+    def __init__(self, public_key):
+        self.public_key = public_key
+        super(CKKSCiphertext, self).__init__()
 
-class CKKSCiphertext:
-    pass
+    def __mul__(self, x):
+        result = CKKSCiphertext(self.public_key)
+        if isinstance(x, CKKSCiphertext):
+            self.public_key.evaluator.multiply(self, x, result)
+            self.public_key.evaluator.relinearize_inplace(result, self.public_key.relin_keys)
+        else:
+            if not isinstance(x, Plaintext):
+                x = self.public_key.encode(x)
+            self.public_key.evaluator.multiply_plain(self, x, result)
+        self.public_key.evaluator.rescale_to_next_inplace(result)
+        return result
+
+    def __add__(self, x):
+        result = CKKSCiphertext(self.public_key)
+        if isinstance(x, CKKSCiphertext):
+            self.public_key.evaluator.add(self, x, result)
+        else:
+            if not isinstance(x, Plaintext):
+                x = self.public_key.encode(x)
+            self.public_key.evaluator.add_plain(self, x, result)
+        return result
+
+    def __sub__(self, x):
+        # x should be ciphertext or raw data
+        return self + (-1 * x)
+
+    # TODO
+    # def __truediv__(self, x):
+    #     pass
 
 
 class CKKSPublicKey:
-    pass
+    def __init__(self, context, public_key, relin_keys, scale):
+        self.context = context
+        self.encryptor = Encryptor(context, public_key)
+        self.evaluator = Evaluator(context)
+        self.encoder = CKKSEncoder(context)
+        self.slot_count = self.encoder.slot_count()
+        self.scale = scale
+        self.relin_keys = relin_keys
+
+    def encrypt(self, raw):
+        encoded_plaintext = self.encode(raw)
+        encrypted_ciphertext = CKKSCiphertext(self)
+        self.encryptor.encrypt(encoded_plaintext, encrypted_ciphertext)
+        return encrypted_ciphertext
+
+    def encode(self, raw):
+        if hasattr(raw, '__len__') and len(raw) > self.slot_count:
+            raise ValueError('Expected sizeof(input)<=', self.slot_count, 'Given', len(raw))
+        raw_double_vector = DoubleVector(raw)
+        encoded_plaintext = Plaintext()
+        self.encoder.encode(raw_double_vector, self.scale, encoded_plaintext)
+        return encoded_plaintext
+
+    def decode(self, plaintext):
+        result = DoubleVector()
+        self.encoder.decode(plaintext, result)
+        return np.array(result)
 
 
 class CKKSSecretKey:
-    pass
+    def __init__(self, context, secret_key):
+        self.context = context
+        self.encoder = CKKSEncoder(self.context)
+        self.decryptor = Decryptor(context, secret_key)
+
+    def decrypt(self, ciphertext):
+        encoded_plaintext = Plaintext()
+        self.decryptor.decrypt(ciphertext, encoded_plaintext)
+        result = DoubleVector()
+        self.encoder.decode(encoded_plaintext, result)
+        return np.array(result)
 
 
 def generate_pk_and_sk(poly_modulus_degree, scale=None, coefficient_modulus=None):
@@ -49,36 +114,4 @@ def generate_pk_and_sk(poly_modulus_degree, scale=None, coefficient_modulus=None
     secret_key = keygen.secret_key()
     relin_keys = keygen.relin_keys()
 
-    encryptor = Encryptor(context, public_key)
-    evaluator = Evaluator(context)
-    decryptor = Decryptor(context, secret_key)
-
-    encoder = CKKSEncoder(context)
-    slot_count = encoder.slot_count()
-
-    pass
-
-
-class CKKSKey:
-
-    def __init__(self, poly_modulus_degree, scale, coeff_modulus=None,):
-
-        # Public part
-        parms = EncryptionParameters(scheme_type.CKKS)
-        parms.set_poly_modulus_degree(poly_modulus_degree)
-        parms.set_coeff_modulus(CoeffModulus.Create(poly_modulus_degree, coeff_modulus))
-
-        scale = pow(2.0, scale)
-        context = SEALContext.Create(parms)
-
-        keygen = KeyGenerator(context)
-        public_key = keygen.public_key()
-        secret_key = keygen.secret_key()
-        relin_keys = keygen.relin_keys()
-
-        encryptor = Encryptor(context, public_key)
-        evaluator = Evaluator(context)
-        decryptor = Decryptor(context, secret_key)
-
-        encoder = CKKSEncoder(context)
-        slot_count = encoder.slot_count()
+    return CKKSPublicKey(context, public_key, relin_keys, scale), CKKSSecretKey(context, secret_key)

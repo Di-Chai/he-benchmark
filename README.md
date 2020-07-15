@@ -44,17 +44,17 @@ Intel(R) Xeon(R) E5-2630 24-core 2.6GHz CPU, 63GB RAM
 
 ```bash
 cd docekr
-sudo docker build . -t he:v1
+sudo docker build . -t he:benchmark
 ```
 
 ## Reproduce the results
 
 ```bash
 # Paillier
-sudo docker run -it --rm -v $(pwd):/he -w /he he:v1 python paillier.py --key 1024
+sudo docker run -it --rm -v $(pwd):/he -w /he he:benchmark python paillier.py
 
 # SEAL-CKKS
-sudo docker run -it --rm -v $(pwd):/he -w /he he:v1 python seal_ckks.py
+sudo docker run -it --rm -v $(pwd):/he -w /he he:benchmark python seal_ckks.py
 ```
 
 ## References

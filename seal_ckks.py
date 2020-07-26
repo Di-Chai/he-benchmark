@@ -14,7 +14,7 @@ args = args_parser.parse_args()
 poly_modulus_degree = args.poly_modulus_degree
 sample_size = args.sample_size
 
-public_key, private_key = generate_pk_and_sk(poly_modulus_degree=poly_modulus_degree, lazy_rescale=False)
+public_key, private_key = generate_pk_and_sk(poly_modulus_degree=poly_modulus_degree, lazy_rescale=False,)
 print(public_key.format_params())
 he_benchmark = HEBenchMark(
     pub_key=public_key, sec_key=private_key, encrypt_params=None,

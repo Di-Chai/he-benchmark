@@ -4,6 +4,7 @@ import time
 import random
 import psutil
 import numpy as np
+from scipy import stats
 
 
 class HEBenchMark:
@@ -29,6 +30,7 @@ class HEBenchMark:
         }
 
     def encrypt(self, value_list):
+        # The ram size could be correctly calculated using Linux
         start_RAM = psutil.Process(os.getpid()).memory_info().rss
         if self.encrypt_params is not None:
             start = time.time()
@@ -162,3 +164,35 @@ class HEBenchMark:
                 ['None' if len(self.ram[e]) == 0 else str(np.mean(self.ram[e]))
                  for e in output_order[:1] + output_order[2:]]
             ) + '\n')
+
+    @staticmethod
+    def evaluate_from_file(file_name):
+        with open(file_name, 'r') as f:
+            records = []
+            for e in f.readlines():
+                if len(e) > 0:
+                    records.append(e)
+            records = [[e1.strip(' ') for e1 in e.strip('\n').split(',')] for e in records]
+            header, records = records[0], records[1:]
+
+        def t_test(group_by, test):
+            data = [[e[header.index(group_by)], float(e[header.index(test)])] for e in records]
+            data_sequence = {}
+            for r in data:
+                data_sequence[r[0]] = data_sequence.get(r[0], []) + [r[1]]
+            significance = []
+            for k1, v1 in data_sequence.items():
+                for k2, v2 in data_sequence.items():
+                    if k1 == k2:
+                        continue
+                    significance.append([k1, k2] + list(stats.ttest_rel(v1, v2)))
+            return significance
+
+        # Perform the t-test
+        significance_results = [
+            # Number Size vs. Time
+            t_test('IntMax', 'encrypt(t)'), t_test('IntMax', 'decrypt(t)'),
+            t_test('IntMax', 'c+p(t)')
+        ]
+
+

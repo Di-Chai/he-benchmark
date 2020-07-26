@@ -17,7 +17,7 @@ CMD ["sh", "-c", "service ssh start && bash"]
 # Install python packages (using douban source)
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
-RUN pip install setuptools numpy matplotlib gmpy2 phe psutil memory_profiler pympler \
+RUN pip install setuptools numpy matplotlib gmpy2 phe psutil memory_profiler pympler scipy \
     -i https://pypi.doubanio.com/simple --trusted-host pypi.doubanio.com
 
 # Install cmake

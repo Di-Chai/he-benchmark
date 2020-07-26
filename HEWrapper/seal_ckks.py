@@ -9,10 +9,13 @@ class CKKSCiphertext(Ciphertext):
         self.public_key = public_key
         super(CKKSCiphertext, self).__init__()
 
-    def lazy_rescale(self, x1, x2):
+    def rescale(self):
+        self.public_key.evaluator.rescale_to_next_inplace(self)
+
+    def lazy_rescale(self, x1, x2, mode='mul'):
         # (1) Check the scale
         if x1.scale() == x2.scale():
-            if x1.scale() > self.public_key.scale:
+            if mode == 'mul' and x1.scale() > self.public_key.scale:
                 self.public_key.evaluator.rescale_to_next_inplace(x1)
                 self.public_key.evaluator.rescale_to_next_inplace(x2)
         else:
@@ -51,7 +54,7 @@ class CKKSCiphertext(Ciphertext):
             c_times_c = False
         # Lazy rescale
         if self.public_key.lazy_rescale:
-            x1, x2 = self.lazy_rescale(self, x)
+            x1, x2 = self.lazy_rescale(self, x, mode='mul')
         else:
             x1, x2 = self, x
         # Multiply
@@ -77,7 +80,7 @@ class CKKSCiphertext(Ciphertext):
             c_times_c = False
         # Lazy rescale
         if self.public_key.lazy_rescale:
-            x1, x2 = self.lazy_rescale(self, x)
+            x1, x2 = self.lazy_rescale(self, x, mode='add')
         else:
             x1, x2 = self, x
         result = CKKSCiphertext(self.public_key)
@@ -163,7 +166,11 @@ def generate_pk_and_sk(poly_modulus_degree, scale=None, coefficient_modulus=None
             coefficient_modulus = [60, 40, 40, 60]
         elif poly_modulus_degree == 16384:
             scale = 2**50
-            coefficient_modulus = [60, 40, 40, 40, 40, 40, 40, 40, 60]
+            coefficient_modulus = [60, 50, 50, 50, 50, 50, 50, 60]
+        elif poly_modulus_degree == 32768:
+            # Following parameters are not well selected
+            scale = 2 ** 60
+            coefficient_modulus = [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
         else:
             raise ValueError('Please provide scale and coefficient_modulus')
 

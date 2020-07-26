@@ -14,7 +14,7 @@ Intel(R) Xeon(R) E5-2630 24-core 2.6GHz CPU, 63GB RAM
 
 #### Shared Param
 
-1. Scale of the plaintext number, floating numbers: 0~1, Integer numbers: 0~100
+1. Scale of the plaintext number, floating numbers: 0\~1, Integer numbers: 0\~100
 2. Repeat times : 100 (presented results are averaged values)
 
 | HE Algo  |               Param                | Encrypt  |   C+P    |   C+C    |   C*P    |   C*C    | Decrypt  |

@@ -11,16 +11,10 @@ vm = ctx.make_virtual_machine(cloud_key)
 
 class EncryptedNumber:
 
-    def __init__(self, sk=None, a=None, value=None, vm=None):
-        if value is None:
-            self.value = sk.encrypt_bits(a)
-            self.size = len(self.value)
-            self.vm = sk.vm
-
-        else:
-            self.value = value
-            self.size = len(self.value)
-            self.vm = vm
+    def __init__(self, value=None, vm=None):
+        self.value = value
+        self.size = len(self.value)
+        self.vm = vm
 
     def __add__(self, other):
         return fhe_add(self.value, other.value, self.size, self.vm)
@@ -47,8 +41,10 @@ class PrivateKey:
         self.vm = abt.get_virtual_machine()
         self.encryptedFalse = self.ctx.encrypt(self.sk, [False])
 
-    def encryptedNum(self):
-        return EncryptedNumber(self.sk, a)
+    def encryptedNum(self, a):
+        value = self.sk.encrypt_bits(a)
+        vm = self.vm
+        return EncryptedNumber(value, vm)
 
 
     def encrypt_bits(self, a: int):
@@ -200,7 +196,7 @@ def fhe_add(a_bin, b_bin, size, vm):
         Sum, C_in = full_adder(ciphertext1, ciphertext2, C_in, vm)
         result.append(Sum)
 
-    Encrypted_result = EncryptedNumber(None, None, result, vm)
+    Encrypted_result = EncryptedNumber(result, vm)
     return Encrypted_result
 
 
@@ -213,8 +209,9 @@ def fhe_sub(a_bin, b_bin, size, vm):
         Sum, C_in = full_subtractor(ciphertext1, ciphertext2, C_in, vm)
         result.append(Sum)
 
-    Encrypted_result = EncryptedNumber(None, None, result, vm)
+    Encrypted_result = EncryptedNumber(result, vm)
     return Encrypted_result
+
 
 
 """
@@ -243,14 +240,13 @@ def main():
     sk = generate_sk()
 
     a = 10
-
+    b = -20
+    c = 30
     a_enc = sk.encrypt_bits(a)
+    b_enc = sk.encrypt_bits(b)
+    c_enc = sk.encrypt_bits(c)
 
-    a = EncryptedNumber(sk, 10)
-    b = EncryptedNumber(sk, -20)
-    c = EncryptedNumber(sk, 30)
-
-    print(sk.decrypt_bits(a + b + c))
+    print(sk.decrypt_bits(a_enc + b_enc + c_enc))
 
 
 if __name__ == '__main__':

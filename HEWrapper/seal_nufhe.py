@@ -23,7 +23,7 @@ class EncryptedNumber:
         return fhe_sub(self.value, other.value, self.size, self.vm)
 
     def __mul__(self, other):
-        pass
+        return fhe_multiplication(self.value, other.value, self.size, self.vm)
 
     def __len__(self):
         return len(self.value)
@@ -42,7 +42,7 @@ class PrivateKey:
         self.encryptedFalse = self.ctx.encrypt(self.sk, [False])
 
     def encryptedNum(self, a):
-        value = self.sk.encrypt_bits(a)
+        value = self.encrypt_bits(a)
         vm = self.vm
         return EncryptedNumber(value, vm)
 
@@ -120,7 +120,7 @@ def to16bitstr(num):
             else:
                 binnum[i].append(True)
 
-        while len(binnum) < 16:
+        while len(binnum) < 32:
             binnum.append([False])
 
     else:
@@ -131,7 +131,7 @@ def to16bitstr(num):
             else:
                 binnum[i].append(True)
 
-        while len(binnum) < 16:
+        while len(binnum) < 32:
             binnum.append([True])
 
         temp = True
@@ -213,6 +213,38 @@ def fhe_sub(a_bin, b_bin, size, vm):
     return Encrypted_result
 
 
+def fhe_add2(a_bin, b_bin, size, vm):
+    result = []
+    C_in = vm.gate_constant([False])
+    for i in range(size):
+        ciphertext1 = a_bin[i]
+        ciphertext2 = b_bin[i]
+        Sum, C_in = full_adder(ciphertext1, ciphertext2, C_in, vm)
+        result.append(Sum)
+    return result
+
+def fhe_multiplication(a_bin, b_bin, size, vm):
+
+    T = vm.gate_constant([False])
+    temp_result = []
+    for i in range(size):
+        temp_result.append([])
+        for j in range(size):
+            temp_result[i].append(T)
+    result = []
+    for i in range(32):
+        result.append(T)
+    for i in range(size):
+        for j in range(size):
+            if(j+i < 31):
+                temp_result[i][(j+i) % 31] = (vm.gate_and(a_bin[j], b_bin[i]))
+            else:
+                temp_result[i][(j + i) % 31] = T
+        result = fhe_add2(result, temp_result[i], size, vm)
+
+    result[size-1] = vm.gate_xor(a_bin[size-1], b_bin[size-1])
+    Encrypted_result = EncryptedNumber(result, vm)
+    return Encrypted_result
 
 """
 sk = generate_sk_and_pk()
@@ -242,11 +274,13 @@ def main():
     a = 10
     b = -20
     c = 30
-    a_enc = sk.encrypt_bits(a)
-    b_enc = sk.encrypt_bits(b)
-    c_enc = sk.encrypt_bits(c)
+    a_enc = sk.encryptedNum(a)
+    b_enc = sk.encryptedNum(b)
+    c_enc = sk.encryptedNum(c)
 
     print(sk.decrypt_bits(a_enc + b_enc + c_enc))
+    print('\n')
+    print(sk.decrypt_bits(a_enc * c_enc))
 
 
 if __name__ == '__main__':

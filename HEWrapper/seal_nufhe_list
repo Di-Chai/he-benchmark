@@ -1,13 +1,14 @@
 import nufhe
 import time
+import random
 
 
 
-class Encrypted_list:
+class EncryptedList:
 
     def __init__(self, value, vm):
         self.value = value
-        self.size = self.value[0].shape[0] # how many int
+        self.size = self.value[0].shape[0]  # how many int
         self.vm = vm
 
     def __add__(self, other):
@@ -24,6 +25,7 @@ class Encrypted_list:
 
     def __getitem__(self, item):
         pass
+
 
 class PrivateKey:
 
@@ -44,7 +46,7 @@ class PrivateKey:
 
     def encrypted_list(self, a: []):
         result = []
-        encryptedresult = []
+        encrypted_result = []
         for i in range(32):
             result.append([])
         for i in range(len(a)):
@@ -52,38 +54,35 @@ class PrivateKey:
             for j in range(len(a_bin_temp)):
                 result[j].append(a_bin_temp[j][0])
         for i in range(len(result)):
-            encryptedresult.append(self.ctx.encrypt(self.sk, result[i]))
-        return Encrypted_list(encryptedresult, self.vm)
+            encrypted_result.append(self.ctx.encrypt(self.sk, result[i]))
+        return EncryptedList(encrypted_result, self.vm)
 
     def decrypt_list(self, result):
         size = result.size
         len_result = len(result)
         result2 = []
         result3 = []
-        laest_result = []
-        print(len_result)
+        latest_result = []
         for i in range(len_result):
             result2.append(self.ctx.decrypt(self.sk, result.value[i]))
-        print(result2)
 
-        print(size)
         for i in range(size):
             result3.append([])
             for j in range(len_result):
                 result3[i].append(result2[j][i])
-        print(result3)
+
         for j in range(size):
             result4 = ""
             for i in range(len_result):
-                if (result3[j][len_result - i - 1] == True):
+                if result3[j][len_result - i - 1]:
                     if i == 0:
                         result4 += '-'
                     else:
                         result4 += '1'
                 else:
                     result4 += '0'
-            laest_result.append(bitstr_to_int(result4))
-        return laest_result
+            latest_result.append(bitstr_to_int(result4))
+        return latest_result
 
 
 class Arbiter:
@@ -122,11 +121,11 @@ def to32bitstr(num):
     str1 = dec2bin(num)
     len_bin = len(str1)
     binnum = []
-    if (str1[0] != '-'):
+    if str1[0] != '-':
 
         for i in range(len_bin):
             binnum.append([])
-            if (str1[len_bin - i - 1] == '0'):
+            if str1[len_bin - i - 1] == '0':
                 binnum[i].append(False)
             else:
                 binnum[i].append(True)
@@ -137,7 +136,7 @@ def to32bitstr(num):
     else:
         for i in range(len_bin):
             binnum.append([])
-            if (str1[len_bin - i - 1] == '1'):
+            if str1[len_bin - i - 1] == '1':
                 binnum[i].append(False)
             else:
                 binnum[i].append(True)
@@ -147,7 +146,7 @@ def to32bitstr(num):
 
         temp = True
         for i in range(len(binnum) - 1):
-            if (binnum[i][0] == True & temp == True):
+            if binnum[i][0] == True & temp == True:
                 binnum[i][0] = False
             else:
                 binnum[i][0] = (binnum[i][0] | temp)
@@ -210,7 +209,7 @@ def fhe_add(a_bin, b_bin, size, vm, int_num):
         Sum, C_in = full_adder(ciphertext1, ciphertext2, C_in, vm)
         result.append(Sum)
 
-    Encrypted_result = Encrypted_list(result, vm)
+    Encrypted_result = EncryptedList(result, vm)
     return Encrypted_result
 
 
@@ -226,7 +225,7 @@ def fhe_sub(a_bin, b_bin, size, vm, int_num):
         Sum, C_in = full_subtractor(ciphertext1, ciphertext2, C_in, vm)
         result.append(Sum)
 
-    Encrypted_result = Encrypted_list(result, vm)
+    Encrypted_result = EncryptedList(result, vm)
     return Encrypted_result
 
 
@@ -243,6 +242,7 @@ def fhe_add2(a_bin, b_bin, size, vm, int_num):
         result.append(Sum)
     return result
 
+
 def fhe_multiplication(a_bin, b_bin, size, vm, int_num):
     t = []
     for i in range(int_num):
@@ -256,17 +256,18 @@ def fhe_multiplication(a_bin, b_bin, size, vm, int_num):
     result = []
     for i in range(size):
         result.append(T)
-    for i in range(size-1):
-        for j in range(size-1):
-            if(j+i < size-1):
-                temp_result[i][(j+i)] = (vm.gate_and(a_bin[j], b_bin[i]))
+    for i in range(size - 1):
+        for j in range(size - 1):
+            if j + i < size - 1:
+                temp_result[i][(j + i)] = (vm.gate_and(a_bin[j], b_bin[i]))
             else:
-                temp_result[i][(j + i) % (size-1)] = T
+                temp_result[i][(j + i) % (size - 1)] = T
         result = fhe_add2(result, temp_result[i], size, vm, int_num)
 
-    result[size-1] = vm.gate_xor(a_bin[size-1], b_bin[size-1])
-    Encrypted_result = Encrypted_list(result, vm)
+    result[size - 1] = vm.gate_xor(a_bin[size - 1], b_bin[size - 1])
+    Encrypted_result = EncryptedList(result, vm)
     return Encrypted_result
+
 
 """
 sk = generate_sk_and_pk()
@@ -288,20 +289,3 @@ def generate_sk():
     abt = Arbiter()
     sk = PrivateKey(abt)
     return sk
-
-
-def main():
-    sk = generate_sk()
-
-    list1 = [-1,2,3,4,-5]
-    list2 = [10,-9,8,7,-6]
-    l1 = sk.encrypted_list(list1)
-    l2 = sk.encrypted_list(list2)
-
-    print(sk.decrypt_list(l1 + l2 - l1))
-    print(sk.decrypt_list(l1 * l2))
-
-
-if __name__ == '__main__':
-    main()
-

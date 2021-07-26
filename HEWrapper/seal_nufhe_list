@@ -55,31 +55,11 @@ class PrivateKey:
             encryptedresult.append(self.ctx.encrypt(self.sk, result[i]))
         return Encrypted_list(encryptedresult, self.vm)
 
-    def decrypt_bits(self, result):
-        size = len(result.value)
-        result2 = []
-        result3 = []
-        result4 = ""
-        for i in range(size):
-            result2.append(self.ctx.decrypt(self.sk, result.value[i]))
-            result3.append(result2[i][0])
-        print(result3)
-        for i in range(size):
-            if (result3[size - i - 1] == True):
-                if i == 0:
-                    result4 += '-'
-                else:
-                    result4 += '1'
-            else:
-                result4 += '0'
-        return bitstr_to_int(result4)
-
     def decrypt_list(self, result):
         size = result.size
         len_result = len(result)
         result2 = []
         result3 = []
-        result4 = ""
         laest_result = []
         print(len_result)
         for i in range(len_result):

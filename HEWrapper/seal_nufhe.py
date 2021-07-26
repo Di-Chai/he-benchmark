@@ -48,7 +48,7 @@ class PrivateKey:
 
 
     def encrypt_bits(self, a: int):
-        a_bin_temp = to16bitstr(a)
+        a_bin_temp = to32bitstr(a)
         size = len(a_bin_temp)
         a_bin = []
         for i in range(size):
@@ -107,7 +107,7 @@ def dec2bin(num):
             return ''.join(l[::-1])
 
 
-def to16bitstr(num):
+def to32bitstr(num):
     str1 = dec2bin(num)
     len_bin = len(str1)
     binnum = []
@@ -266,22 +266,3 @@ def generate_sk():
     abt = Arbiter()
     sk = PrivateKey(abt)
     return sk
-
-
-def main():
-    sk = generate_sk()
-
-    a = 10
-    b = -20
-    c = 30
-    a_enc = sk.encryptedNum(a)
-    b_enc = sk.encryptedNum(b)
-    c_enc = sk.encryptedNum(c)
-
-    print(sk.decrypt_bits(a_enc + b_enc + c_enc))
-    print('\n')
-    print(sk.decrypt_bits(a_enc * c_enc))
-
-
-if __name__ == '__main__':
-    main()

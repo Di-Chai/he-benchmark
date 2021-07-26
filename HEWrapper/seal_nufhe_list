@@ -34,12 +34,6 @@ class PrivateKey:
         self.vm = abt.get_virtual_machine()
         self.encryptedFalse = self.ctx.encrypt(self.sk, [False])
 
-    def encryptedNum(self, a):
-        value = self.encrypt_bits(a)
-        vm = self.vm
-        return EncryptedNumber(value, vm)
-
-
     def encrypt_bits(self, a: int):
         a_bin_temp = to32bitstr(a)
         size = len(a_bin_temp)

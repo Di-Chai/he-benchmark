@@ -1,7 +1,7 @@
 import argparse
 import time
 import random
-from HEBenchMark import HEBenchMark.seal_nufhe
+from HEBenchMark import HEBenchMark.seal_nufhe_list
 
 sk = generate_sk()
 control_list = [1, 10, 100, 1000]

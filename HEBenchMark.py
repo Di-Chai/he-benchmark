@@ -17,6 +17,8 @@ class HEBenchMark:
         self.sec_key = sec_key
         self.encrypt_params = encrypt_params
         self.output_file_name = output_file_name
+        if not os.path.isdir(os.path.dirname(self.output_file_name)):
+            os.makedirs(os.path.dirname(self.output_file_name))
         self.output_infos = output_infos
 
         self.run_time = {

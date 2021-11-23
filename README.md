@@ -60,6 +60,12 @@ cd docekr
 sudo docker build . -t he:benchmark
 ```
 
+If you have slow network connections, the following commend might be faster
+
+```bash
+sudo docker build . -t he:benchmark -f Local.Dockerfile
+```
+
 #### Single trial
 
 ```bash
